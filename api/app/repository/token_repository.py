@@ -1,12 +1,15 @@
+import logging
 from psycopg2 import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from app import get_db
 from app.models.token import Token
 
+logger = logging.getLogger("resources")
+
 
 class TokenRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session = Depends(get_db)):
         self.db = db
 
     def add_token(self, address: str):
@@ -40,6 +43,11 @@ class TokenRepository:
         token = self.db.query(Token).filter(Token.address == token_address).first()
         if not token:
             raise HTTPException(status_code=404, detail=f"Token with address {token_address} not found.")
+        return token
+
+    def get_or_none(self, token_address: str):
+        """Retrieve a token by address or return None if it does not exist."""
+        token = self.db.query(Token).filter(Token.address == token_address).first()
         return token
 
 

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.repository.token_repository import get_token_repository
-from app.services.token_service import get_token_service
+from app.services.token_service import TokenService
 from app import get_db
 from app.models.token import Token, TokenInfo, TokenModel
 
@@ -10,18 +10,23 @@ router = APIRouter()
 
 @router.get("/get_token_info/{address}", response_model=TokenModel)
 async def get_token_info(address: str, db: Session = Depends(get_db)) -> TokenModel:
-    token_service = get_token_service()
+    token_service = TokenService()
     token_rep = get_token_repository(db)
     token = token_rep.get_or_404(address)
     return token_service.get_token_info(token.address)
 
 
 @router.post("/add_token/{address}", response_model=TokenInfo)
-async def add_token(address: str, db: Session = Depends(get_db)) -> TokenInfo:
-    token_service = get_token_service()
-    token_rep = get_token_repository(db)
-    token = token_rep.add_token(address)
-    return token_service.get_token_info(token.address)
+async def add_token(
+    address: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
+) -> TokenInfo:
+    token_service = TokenService(db)
+    try:
+        token = token_service.add_new_token(address, background_tasks)
+        # Schedule the collect_token_info to run in the background
+        return token
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/collect_token_signatures/{address}", response_model=TokenModel)

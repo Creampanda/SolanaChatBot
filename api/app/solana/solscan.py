@@ -1,6 +1,6 @@
 from datetime import datetime
 from time import sleep
-from config import INIT_MINT_COMMAND, SRC_URL, TOKEN, SPL_TOKEN_PROGRAM_ID
+from app.solana.config import INIT_MINT_COMMAND, SRC_URL, TOKEN, SPL_TOKEN_PROGRAM_ID
 from solana.rpc.api import Client
 from solders.pubkey import Pubkey
 from solders.signature import Signature
@@ -14,6 +14,8 @@ class TokenChainInfo:
 
     def __init__(self, token_address: str) -> None:
         self.token_pb = Pubkey.from_string(token_address)
+        self.token_update_authority = None
+        self.init_mint_sig = None
 
     def get_token_update_authority(self) -> Pubkey:
         account_info = self.client.get_account_info(self.token_pb)
@@ -22,7 +24,7 @@ class TokenChainInfo:
         self.token_update_authority = Pubkey(update_authority_bytes)
         return Pubkey(update_authority_bytes)
 
-    def find_deploy_transaction(self) -> int:
+    def find_deploy_transaction(self) -> Signature:
 
         transaction_signatures = self.client.get_signatures_for_address(
             self.token_update_authority, limit=1000

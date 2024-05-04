@@ -12,7 +12,7 @@ app.include_router(router)
 
 # Function to run the app
 def start():
-    uvicorn.run("main:app", host="0.0.0.0", port=PORT)
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=True)
 
 
 # Main guard for running the application

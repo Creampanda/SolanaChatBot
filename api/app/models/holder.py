@@ -24,4 +24,4 @@ class HolderModel(BaseModel):
     last_checked: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

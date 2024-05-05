@@ -134,16 +134,16 @@ class TokenChainInfo:
                 break
         return unique_buyers
 
-    def get_current_holders_balances(self):
+    def get_current_holders_balances(self, holders):
         opts = types.TokenAccountOpts(mint=self.token_pb, encoding="base64")
-
-        for pk, amount in self.holders.items():
-            print(pk)
+        current_balances = []
+        for holder_address in holders:
+            pk = Pubkey.from_string(holder_address)
             current_amount = 0
             try:
                 token_accounts = self.client.get_token_accounts_by_owner(pk, opts=opts)
             except SolanaRpcException as e:
-                sleep(5)
+                sleep(15)
                 token_accounts = self.client.get_token_accounts_by_owner(pk, opts=opts)
             for token_acc in token_accounts.value:
                 print(token_acc.pubkey)
@@ -152,8 +152,9 @@ class TokenChainInfo:
                         self.client.get_token_account_balance(token_acc.pubkey).value.amount
                     )
                 except SolanaRpcException as e:
-                    sleep(5)
+                    sleep(15)
                     current_amount += int(
                         self.client.get_token_account_balance(token_acc.pubkey).value.amount
                     )
-            print(current_amount)
+            current_balances.append(current_amount)
+        return current_balances

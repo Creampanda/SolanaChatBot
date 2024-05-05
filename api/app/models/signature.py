@@ -5,12 +5,13 @@ from app import Base
 
 
 class Signature(Base):
-    __tablename__ = "signatures"
+    __tablename__ = "signature"
     signature = Column(String, primary_key=True)
     slot = Column(Integer, nullable=False)
     block_time = Column(Integer, nullable=False)
     token_id = Column(Integer, ForeignKey("token.id"), nullable=False)
     token = relationship("Token", back_populates="signatures")
+
 
 class SignatureModel(BaseModel):
     signature: str

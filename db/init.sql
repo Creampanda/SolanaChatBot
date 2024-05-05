@@ -19,8 +19,8 @@ CREATE TABLE signature (
 CREATE TABLE holder (
     address VARCHAR NOT NULL,
     token_id INTEGER NOT NULL,
-    initial_balance INTEGER NOT NULL,
-    current_balance INTEGER NOT NULL,
+    initial_balance BIGINT NOT NULL,
+    current_balance BIGINT NOT NULL,
     last_checked TIMESTAMP NOT NULL,
     PRIMARY KEY (address, token_id),
     FOREIGN KEY (token_id) REFERENCES token(id)

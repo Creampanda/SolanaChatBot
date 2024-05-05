@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 from app import Base
 
 
@@ -9,6 +10,8 @@ class Token(Base):
     address = Column(String, nullable=False, unique=True)
     initial_sig = Column(String, nullable=True)
     update_authority = Column(String, nullable=True)
+    signatures = relationship("Signature", back_populates="token")
+    holders = relationship("Holder", back_populates="token")
 
 
 # Pydantic models for response

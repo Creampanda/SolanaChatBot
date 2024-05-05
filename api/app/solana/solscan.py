@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from time import sleep
 from app.solana.config import INIT_MINT_COMMAND, SRC_URL, TOKEN, SPL_TOKEN_PROGRAM_ID
 from solana.rpc.api import Client
@@ -7,6 +8,8 @@ from solders.signature import Signature
 from solana.rpc import types
 
 from solana.exceptions import SolanaRpcException
+
+logger = logging.getLogger("resources")
 
 
 class TokenChainInfo:
@@ -59,77 +62,76 @@ class TokenChainInfo:
                 return self.init_mint_sig
 
     def collect_token_signatures(self):
-        token_signatures = []
-        start_ts = datetime.now()
         # Start fetching transaction signatures
-        signatures = self.client.get_signatures_for_address(
-            self.token_pb, limit=1000, until=initial_sig
-        ).value
-        print(f"{signatures[0].signature} ... {signatures[-1].signature}")
+
+        try:
+            signatures = self.client.get_signatures_for_address(self.token_pb, limit=1000).value
+        except SolanaRpcException as e:
+            sleep(15)
+            signatures = self.client.get_signatures_for_address(self.token_pb, limit=1000).value
+        # Start timing
+        start_ts = datetime.now()
         # Loop until no more signatures are found
         while signatures:
-            # Collect all signatures from the current batch
-            for signature_detail in signatures:
-                if signature_detail.err is None:
-                    token_signatures.append(signature_detail.signature)
+            logger.info("Getting signatures...")
+            # Collect all valid signatures (no errors) from the current batch
+            valid_signatures = [sig for sig in signatures if sig.err is None]
+            # Yield the current batch of valid signatures
+            yield valid_signatures
+
             # Get the last signature in the current batch to use as the 'before' parameter for the next batch
             last_signature = signatures[-1].signature
             # Fetch the next batch of signatures
-            signatures = self.client.get_signatures_for_address(
-                self.token_pb, before=last_signature, limit=1000, until=initial_sig
-            ).value
-            print(datetime.now())
-            print(len(token_signatures))
-        end_ts = datetime.now()
-        print(end_ts - start_ts)
-        print(len(token_signatures))
+            try:
+                signatures = self.client.get_signatures_for_address(
+                    self.token_pb, before=last_signature, limit=1000
+                ).value
+            except SolanaRpcException as e:
+                sleep(15)
+                signatures = self.client.get_signatures_for_address(
+                    self.token_pb, before=last_signature, limit=1000
+                ).value
 
-    def find_first_50_transactions(self):
+        # End timing and print total time
+        end_ts = datetime.now()
+        logger.info(end_ts - start_ts)
+
+    def find_first_50_transactions(self, signatures):
         # Storage for unique buyers
         unique_buyers = {}
-
         # Start fetching transactions
-        signatures = self.client.get_signatures_for_address(self.token_pb, limit=1000).value
-
-        while signatures and len(unique_buyers) < 50:
-            # Fetch full transaction details for each signature
-            for signature_detail in signatures:
-                # Get the full transaction
+        for sig in signatures:
+            signature = Signature.from_string(sig)
+            # Get the full transaction
+            try:
                 transaction = self.client.get_transaction(
-                    signature_detail.signature, max_supported_transaction_version=0
+                    signature, max_supported_transaction_version=0
                 ).value.transaction
-                if transaction.meta.err:
-                    continue
-                # Extract token balances before and after the transaction
-                pre_balances = [
-                    bal for bal in transaction.meta.pre_token_balances if bal.mint == self.token_pb
-                ]
-                post_balances = [
-                    bal for bal in transaction.meta.post_token_balances if bal.mint == self.token_pb
-                ]
-                # Map balances by owner
-                pre_dict = {bal.owner: int(bal.ui_token_amount.amount) for bal in pre_balances}
-                post_dict = {bal.owner: int(bal.ui_token_amount.amount) for bal in post_balances}
-                # Identify changes in balances
-                for owner, post_bal in post_dict.items():
-                    pre_bal = pre_dict.get(owner, 0)
-                    balance_change = post_bal - pre_bal
-                    # Check if this is a positive change and the owner isn't already tracked
-                    if balance_change > 0 and owner not in unique_buyers:
-                        unique_buyers[owner] = post_bal
-                        if len(unique_buyers) >= 50:
-                            break
-
+            except SolanaRpcException as e:
+                sleep(15)
+                transaction = self.client.get_transaction(
+                    signature, max_supported_transaction_version=0
+                ).value.transaction
+            if transaction.meta.err:
+                continue
+            # Extract token balances before and after the transaction
+            pre_balances = [bal for bal in transaction.meta.pre_token_balances if bal.mint == self.token_pb]
+            post_balances = [bal for bal in transaction.meta.post_token_balances if bal.mint == self.token_pb]
+            # Map balances by owner
+            pre_dict = {bal.owner: int(bal.ui_token_amount.amount) for bal in pre_balances}
+            post_dict = {bal.owner: int(bal.ui_token_amount.amount) for bal in post_balances}
+            # Identify changes in balances
+            for owner, post_bal in post_dict.items():
+                pre_bal = pre_dict.get(owner, 0)
+                balance_change = post_bal - pre_bal
+                # Check if this is a positive change and the owner isn't already tracked
+                if balance_change > 0 and owner not in unique_buyers:
+                    unique_buyers[owner] = post_bal
+                    if len(unique_buyers) >= 50:
+                        break
+            logger.info(f"Found {len(unique_buyers)} holders...")
             if len(unique_buyers) >= 50:
                 break
-
-            # Move to the next batch of transactions
-            last_signature = signatures[-1].signature
-            print("Searching for transactions..")
-            signatures = self.client.get_signatures_for_address(
-                self.token_pb, before=last_signature, limit=1000
-            ).value
-        self.holders = unique_buyers
         return unique_buyers
 
     def get_current_holders_balances(self):

@@ -2,6 +2,8 @@ from functools import cached_property
 from fastapi import BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 import logging
+from app.services.holder_service import HolderService
+from app.services.signature_service import SignatureService
 from app.repository.token_repository import TokenRepository, get_token_repository
 from app.solana.solscan import TokenChainInfo
 from app.solana.dexscreener import get_token_info
@@ -28,7 +30,7 @@ class TokenService:
         return TokenInfo(address=token_address)
 
     def get_update_authority(self, token_address: str) -> Token:
-        db = SessionLocal()
+        db = get_db()
         try:
             token = self.db.query(Token).filter(Token.address == token_address).first()
             if not token:
@@ -60,4 +62,6 @@ class TokenService:
             token = self.token_repository.add_token(token_address)
             # Schedule the collect_token_info to run in the background
             background_tasks.add_task(self.get_update_authority, token_address)
+            background_tasks.add_task(SignatureService(db=next(get_db())).collect_signatures, token_address)
+            background_tasks.add_task(HolderService(db=next(get_db())).collect_holders, token_address)
         return token

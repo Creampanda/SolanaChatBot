@@ -1,24 +1,31 @@
-from psycopg2 import IntegrityError
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
-from app import get_db
-from app.models.token import Token
 from app.models.signature import Signature, SignatureModel
+from sqlalchemy.exc import IntegrityError
 
 
 class SignatureRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def add_signature(self, signature_data: SignatureModel):
+    def add_signature(self, new_signature: Signature):
         """Add a new signature to the database."""
-        new_signature = Signature(
-            signature=signature_data.signature,
-            slot=signature_data.slot,
-            block_time=signature_data.block_time,
-            token_id=signature_data.token_id,
-        )
         self.db.add(new_signature)
-        self.db.commit()
-        self.db.refresh(new_signature)
-        return new_signature
+        try:
+            self.db.commit()
+            self.db.refresh(new_signature)
+            return new_signature
+        except IntegrityError:
+            self.db.rollback()  # Handle duplicate signature insertion etc.
+            raise HTTPException(status_code=400, detail="Integrity error on signature insertion.")
+
+    def add_signatures(self, signatures: list[Signature]):
+        """Add multiple new signatures to the database using batch insertion."""
+
+        self.db.bulk_save_objects(signatures)
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()  # Handle duplicate signature insertion etc.
+            raise HTTPException(status_code=400, detail="Integrity error on signature insertion.")
+        return signatures

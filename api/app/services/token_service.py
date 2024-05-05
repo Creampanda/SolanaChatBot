@@ -1,14 +1,15 @@
 from functools import cached_property
 from fastapi import BackgroundTasks, Depends, HTTPException
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 import logging
 from app.services.holder_service import HolderService
 from app.services.signature_service import SignatureService
-from app.repository.token_repository import TokenRepository, get_token_repository
+from app.repository.token_repository import TokenRepository
 from app.solana.solscan import TokenChainInfo
-from app.solana.dexscreener import get_token_info
-from app import SessionLocal, get_db
-from app.models.token import Token, TokenInfo, TokenModel
+from app.solana.dexscreener import get_token_info_from_dex
+from app import get_db
+from app.models.token import Token, TokenData, TokenInfo
 
 logger = logging.getLogger("resources")
 
@@ -21,13 +22,6 @@ class TokenService:
     def token_repository(self) -> TokenRepository:
         """Lazy-loaded cached property to get the token repository."""
         return TokenRepository(self.db)
-
-    def get_token_info(self, token_address: str) -> TokenInfo:
-        """Retrieve token information using an external API call."""
-        token_data = get_token_info(token_address)
-        if not token_data:
-            raise HTTPException(status_code=404, detail="Token information not found.")
-        return TokenInfo(address=token_address)
 
     def get_update_authority(self, token_address: str) -> Token:
         db = get_db()
@@ -65,3 +59,14 @@ class TokenService:
             background_tasks.add_task(SignatureService(db=next(get_db())).collect_signatures, token_address)
             background_tasks.add_task(HolderService(db=next(get_db())).collect_holders, token_address)
         return token
+
+    def get_token_info(self, token_address: str) -> TokenData:
+        data = get_token_info_from_dex(token_address)
+        try:
+            # Parse the JSON response into the Pydantic model
+            token_data = TokenData(**data)
+            return token_data
+        except ValidationError as e:
+            # Handle validation errors
+            print(f"Error parsing token data: {str(e)}")
+            raise

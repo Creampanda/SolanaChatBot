@@ -6,14 +6,14 @@ from app.services.holder_service import HolderService
 from app.repository.token_repository import get_token_repository
 from app.services.token_service import TokenService
 from app import get_db
-from app.models.token import Token, TokenInfo, TokenModel
+from app.models.token import Token, TokenData, TokenInfo, TokenModel
 
 router = APIRouter()
 
 
-@router.get("/get_token_info/{address}", response_model=TokenModel)
-async def get_token_info(address: str, db: Session = Depends(get_db)) -> TokenModel:
-    token_service = TokenService()
+@router.get("/get_token_info/{address}", response_model=TokenData)
+async def get_token_info(address: str, db: Session = Depends(get_db)) -> TokenData:
+    token_service = TokenService(db)
     token_rep = get_token_repository(db)
     token = token_rep.get_or_404(address)
     return token_service.get_token_info(token.address)

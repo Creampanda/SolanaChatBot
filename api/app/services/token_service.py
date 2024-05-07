@@ -49,10 +49,18 @@ class TokenService:
         self.token_repository.db.commit()
         return token
 
+    def check_if_token(self, token_address: str):
+        tci = TokenChainInfo(token_address)
+        is_token, msg = tci.check_if_token()
+        if not is_token:
+            raise HTTPException(status_code=404, detail=str(msg))
+
     def add_new_token(self, token_address: str, background_tasks: BackgroundTasks) -> TokenInfo:
         logger.info("Adding new token to the database")
         token = self.token_repository.get_or_none(token_address)
         if token is None:
+            tci = TokenChainInfo(token_address)
+            self.check_if_token()
             token = self.token_repository.add_token(token_address)
             # Schedule the collect_token_info to run in the background
             background_tasks.add_task(self.get_update_authority, token_address)

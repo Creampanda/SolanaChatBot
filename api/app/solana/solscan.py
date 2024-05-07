@@ -6,7 +6,7 @@ from solana.rpc.api import Client
 from solders.pubkey import Pubkey
 from solders.signature import Signature
 from solana.rpc import types
-
+from solana.rpc.core import InvalidParamsMessage
 from solana.exceptions import SolanaRpcException
 
 logger = logging.getLogger("resources")
@@ -19,6 +19,12 @@ class TokenChainInfo:
         self.token_pb = Pubkey.from_string(token_address)
         self.token_update_authority = None
         self.init_mint_sig = None
+
+    def check_if_token(self) -> tuple[bool, str]:
+        ans = self.client.get_token_supply(self.token_pb)
+        if isinstance(ans, InvalidParamsMessage):
+            return False, ans.message
+        return True, "Token found"
 
     def get_token_update_authority(self) -> Pubkey:
         account_info = self.client.get_account_info(self.token_pb)

@@ -19,10 +19,10 @@ async def get_token_info(address: str, db: Session = Depends(get_db)) -> TokenDa
     return token_service.get_token_info(token.address)
 
 
-@router.post("/add_token/{address}", response_model=TokenInfo)
+@router.post("/add_token/{address}", response_model=TokenModel)
 async def add_token(
     address: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)
-) -> TokenInfo:
+) -> TokenModel:
     token_service = TokenService(db)
     try:
         token = token_service.add_new_token(address, background_tasks)

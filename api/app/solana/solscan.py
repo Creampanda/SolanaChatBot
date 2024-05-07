@@ -120,6 +120,7 @@ class TokenChainInfo:
                 ).value.transaction
             if transaction.meta.err:
                 continue
+            signer = transaction.transaction.message.account_keys[0]
             # Extract token balances before and after the transaction
             pre_balances = [bal for bal in transaction.meta.pre_token_balances if bal.mint == self.token_pb]
             post_balances = [bal for bal in transaction.meta.post_token_balances if bal.mint == self.token_pb]
@@ -131,7 +132,7 @@ class TokenChainInfo:
                 pre_bal = pre_dict.get(owner, 0)
                 balance_change = post_bal - pre_bal
                 # Check if this is a positive change and the owner isn't already tracked
-                if balance_change > 0 and owner not in unique_buyers:
+                if balance_change > 0 and owner not in unique_buyers and str(signer) == str(owner):
                     unique_buyers[owner] = post_bal
                     if len(unique_buyers) >= 50:
                         break

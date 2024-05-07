@@ -3,8 +3,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.repository.signature_repository import SignatureRepository
 from app.solana.solscan import TokenChainInfo
-from app.models.signature import Signature, SignatureModel
-from app.models.token import Token, TokenInfo, TokenModel
+from app.models.signature import Signature
+from app.models.token import Token
 
 logger = logging.getLogger("resources")
 

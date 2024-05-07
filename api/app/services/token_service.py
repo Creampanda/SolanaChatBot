@@ -60,7 +60,7 @@ class TokenService:
         token = self.token_repository.get_or_none(token_address)
         if token is None:
             tci = TokenChainInfo(token_address)
-            self.check_if_token()
+            self.check_if_token(token_address)
             token = self.token_repository.add_token(token_address)
             # Schedule the collect_token_info to run in the background
             background_tasks.add_task(self.get_update_authority, token_address)

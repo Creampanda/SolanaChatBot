@@ -18,10 +18,7 @@ class Token(Base):
 
 # Pydantic models for response
 class TokenModel(BaseModel):
-    id: int
     address: str
-    initial_sig: str = None
-    update_authority: str = None
 
     class Config:
         from_attributes = True

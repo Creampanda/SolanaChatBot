@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 API_BASE_URL = f"http://api_service:{os.getenv('API_PORT', 8000)}"
 
 meanings = {
-    emoji.emojize(":blue_square:"): "Текущйий баланс > 100% начального баланса",
-    emoji.emojize(":green_square:"): "Текущйий баланс > 90% начального баланса",
-    emoji.emojize(":yellow_square:"): "Текущйий баланс > 50% начального баланса",
-    emoji.emojize(":orange_square:"): "Текущйий баланс < 50% начального баланса",
-    emoji.emojize(":red_square:"): "Текущйий баланс равен 0",
-    emoji.emojize(":white_large_square:"): "Не удалось получить баланс юзера",
+    emoji.emojize(":blue_square:"): "Текущий баланс > 100% начального баланса",
+    emoji.emojize(":green_square:"): "Текущий баланс > 90% начального баланса",
+    emoji.emojize(":yellow_square:"): "Текущий баланс > 50% начального баланса",
+    emoji.emojize(":orange_square:"): "Текущий баланс < 50% начального баланса",
+    emoji.emojize(":red_square:"): "Текущий баланс равен 0",
+    emoji.emojize(":white_large_square:"): "Не удалось получить баланс холдера",
 }
 
 
@@ -59,7 +59,7 @@ def format_emojis_for_display(emojis):
 async def format_and_send_token_info(update: Update, token_data):
     """Formats the token data into a readable string and sends it as a message."""
 
-    message_text = "<b>Token Pairs Information:</b>\n"
+    message_text = "<b>Информация по токену:</b>\n"
     for pair in token_data["pairs"]:
         ts = pair.get("pairCreatedAt", "N/A")
         if isinstance(ts, int):
@@ -72,28 +72,27 @@ async def format_and_send_token_info(update: Update, token_data):
             formatted_date = dt_object.strftime("%Y-%m-%d %H:%M:%S")
         message_text += (
             f"\n<b>Dex:</b> {pair['dexId']}"
-            f"\n<b>Pair Address:</b> {pair['pairAddress']}"
-            f"\n<b>URL:</b> <a href='{pair['url']}'>View Dex</a>"
-            f"\n<b>Base Token:</b> {pair['baseToken']['name']} ({pair['baseToken']['symbol']})"
-            f"\n<b>Quote Token:</b> {pair['quoteToken']['name']} ({pair['quoteToken']['symbol']})"
-            f"\n<b>Price USD:</b> {pair['priceUsd']}"
-            f"\n<b>24h Volume:</b> {pair['volume']['h24']}"
-            f"\n<b>6h Volume:</b> {pair['volume']['h6']}"
-            f"\n<b>1h Volume:</b> {pair['volume']['h1']}"
-            f"\n<b>5m Volume:</b> {pair['volume']['m5']}"
-            f"\n<b>Liquidity USD:</b> {pair['liquidity']['usd']}"
-            f"\n<b>Liquidity Base:</b> {pair['liquidity']['base']}"
-            f"\n<b>Liquidity Quote:</b> {pair['liquidity']['quote']}"
-            f"\n<b>Fully Diluted Valuation (FDV):</b> {pair['fdv']}"
-            f"\n<b>Pair Created At:</b> {formatted_date}\n"
+            f"\n<b>Адрес токена:</b> {pair['baseToken']['address']}"
+            f"\n<b>Ссылка на dexscreener:</b> <a href='{pair['url']}'>Посмотреть</a>"
+            f"\n<b>Название токена:</b> {pair['baseToken']['name']} ({pair['baseToken']['symbol']})"
+            f"\n<b>Цена в USD:</b> {pair['priceUsd']}"
+            f"\n<b>Объём за 24 часа:</b> {pair['volume']['h24']}"
+            f"\n<b>Объём за 6 часов:</b> {pair['volume']['h6']}"
+            f"\n<b>Объём за 1 час:</b> {pair['volume']['h1']}"
+            f"\n<b>Объём за 5 минут:</b> {pair['volume']['m5']}"
+            f"\n<b>Ликвидность:</b> {pair['liquidity']['usd']}"
+            f"\n<b>FDV:</b> {pair['fdv']}"
+            f"\n<b>Токен создан:</b> {formatted_date}\n"
         )
+        if pair["dexId"] == "raydium":
+            break
     await update.message.reply_html(message_text)
 
 
 # Command to get token information
 async def get_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not context.args:
-        await update.message.reply_text("Please provide a token address.")
+        await update.message.reply_text("Пожалуйста, укажите адрес токена.")
         return
     address = context.args[0]
     response = requests.get(f"{API_BASE_URL}/get_token_info/{address}")
@@ -101,28 +100,7 @@ async def get_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         token_data = response.json()
         await format_and_send_token_info(update, token_data)
     else:
-        await update.message.reply_text("Failed to retrieve token info.")
-
-
-# Command to add a new token
-async def add_token(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not context.args:
-        await update.message.reply_text("Please provide a token address.")
-        return
-    address = context.args[0]
-    response = requests.post(f"{API_BASE_URL}/add_token/{address}")
-    if response.status_code == 200:
-        token_data = response.json()
-        await update.message.reply_text(f"Token added: {token_data}")
-    else:
-        await update.message.reply_text("Failed to add token.")
-
-
-# Command to get token holders information
-async def get_holders_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not context.args:
-        await update.message.reply_text("Please provide a token address.")
-        return
+        await update.message.reply_text("Неудалось достать информацию по токену.")
     address = context.args[0]
     response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
     if response.status_code == 200:
@@ -130,9 +108,27 @@ async def get_holders_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         answer = categorize_balance(holders_data)
         formatted_ans = format_emojis_for_display(answer)
         meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
-        await update.message.reply_text(f"Holders Info: \n{formatted_ans} \n{meanings_text}")
+        await update.message.reply_text(f"Холдеры: \n{formatted_ans} \n{meanings_text}")
     else:
-        await update.message.reply_text("Failed to retrieve holders info.")
+        await update.message.reply_text("Неудалось достать информацию по холдерам.")
+
+
+# Command to add a new token
+async def add_token(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not context.args:
+        await update.message.reply_text("Пожалуйста, укажите адрес токена.")
+        return
+    address = context.args[0]
+    response = requests.post(f"{API_BASE_URL}/add_token/{address}")
+    if response.status_code == 200:
+        token_data = response.json()
+        await update.message.reply_text(f"Токен добавлен: {token_data}")
+    else:
+        await update.message.reply_text("Неудалось добавить токен.")
+
+
+def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.error(f"An error occurred: {context.error}")
 
 
 def main() -> None:
@@ -141,8 +137,7 @@ def main() -> None:
     # Handlers for each command
     application.add_handler(CommandHandler("get_token_info", get_token_info))
     application.add_handler(CommandHandler("add_token", add_token))
-    application.add_handler(CommandHandler("get_holders_info", get_holders_info))
-
+    application.add_error_handler(error_handler)
     # Run the bot
     application.run_polling()
 

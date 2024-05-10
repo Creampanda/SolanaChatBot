@@ -100,7 +100,7 @@ async def get_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         token_data = response.json()
         await format_and_send_token_info(update, token_data)
     else:
-        await update.message.reply_text("Неудалось достать информацию по токену.")
+        await update.message.reply_text("Не удалось достать информацию по токену.")
     address = context.args[0]
     response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
     if response.status_code == 200:
@@ -110,7 +110,7 @@ async def get_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
         await update.message.reply_text(f"Холдеры: \n{formatted_ans} \n{meanings_text}")
     else:
-        await update.message.reply_text("Неудалось достать информацию по холдерам.")
+        await update.message.reply_text("Не удалось достать информацию по холдерам.")
 
 
 # Command to add a new token
@@ -124,7 +124,7 @@ async def add_token(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         token_data = response.json()
         await update.message.reply_text(f"Токен добавлен: {token_data}")
     else:
-        await update.message.reply_text("Неудалось добавить токен.")
+        await update.message.reply_text("Не удалось добавить токен.")
 
 
 def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):

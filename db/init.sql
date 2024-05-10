@@ -2,7 +2,6 @@
 CREATE TABLE token (
     id SERIAL PRIMARY KEY,
     address VARCHAR NOT NULL UNIQUE,
-    initial_sig VARCHAR,
     update_authority VARCHAR
 );
 

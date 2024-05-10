@@ -10,11 +10,15 @@ app = FastAPI()
 app.include_router(router)
 
 
-# Function to run the app
 def start():
+    """
+    Function to start the FastAPI application.
+
+    Notes:
+        This function runs the FastAPI application using uvicorn with the specified host and port.
+    """
     uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=True)
 
 
-# Main guard for running the application
 if __name__ == "__main__":
     start()

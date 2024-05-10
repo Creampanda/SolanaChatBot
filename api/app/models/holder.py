@@ -6,6 +6,17 @@ from app import Base
 
 
 class Holder(Base):
+    """
+    SQLAlchemy model representing a holder of a token.
+
+    Attributes:
+        address (str): The address of the holder.
+        token_id (int): The ID of the token.
+        initial_balance (int): The initial balance of the holder.
+        current_balance (int): The current balance of the holder.
+        last_checked (datetime): The timestamp of when the holder was last checked.
+    """
+
     __tablename__ = "holder"
     address = Column(String, nullable=False)
     token_id = Column(Integer, ForeignKey("token.id"), nullable=False)
@@ -17,6 +28,17 @@ class Holder(Base):
 
 
 class HolderModel(BaseModel):
+    """
+    Pydantic model representing a holder of a token.
+
+    Attributes:
+        address (str): The address of the holder.
+        token_id (int): The ID of the token.
+        initial_balance (int): The initial balance of the holder.
+        current_balance (int): The current balance of the holder.
+        last_checked (datetime): The timestamp of when the holder was last checked.
+    """
+
     address: str
     token_id: int
     initial_balance: int

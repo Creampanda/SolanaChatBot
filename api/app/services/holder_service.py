@@ -14,12 +14,34 @@ logger = logging.getLogger("resources")
 
 
 class HolderService:
+    """
+    Service class for managing operations related to holders.
+
+    Attributes:
+        db (Session): The SQLAlchemy database session.
+        holder_repository (HolderRepository): The repository for holder-related operations.
+    """
+
     def __init__(self, db: Session):
+        """
+        Initializes the HolderService with a database session.
+
+        Args:
+            db (Session): The SQLAlchemy database session.
+        """
         self.db = db
         self.holder_repository = HolderRepository(db)
 
     def collect_holders(self, token_address):
-        """Collect signatures and store them in the database in batches."""
+        """
+        Collect signatures and store them in the database in batches.
+
+        Args:
+            token_address (str): The address of the token.
+
+        Raises:
+            HTTPException: If token or holders are not found.
+        """
         token = self.db.query(Token).filter(Token.address == token_address).first()
         if not token:
             logger.error("Token not found")
@@ -47,6 +69,18 @@ class HolderService:
             self.holder_repository.add_holder(holder)
 
     def update_holders_info(self, token_address) -> List[HolderModel]:
+        """
+        Update holders' information in the database.
+
+        Args:
+            token_address (str): The address of the token.
+
+        Returns:
+            List[HolderModel]: List of updated holder models.
+
+        Raises:
+            HTTPException: If token or holders are not found or update fails.
+        """
         token = self.db.query(Token).filter(Token.address == token_address).first()
         if not token:
             logger.error("Token not found")
@@ -75,4 +109,13 @@ class HolderService:
 
 # Dependency
 def get_holder_service(db: Session = Depends(get_db)):
+    """
+    Dependency function to get the HolderService instance.
+
+    Args:
+        db (Session): The SQLAlchemy database session.
+
+    Returns:
+        HolderService: The HolderService instance.
+    """
     return HolderService(db)

@@ -10,12 +10,34 @@ logger = logging.getLogger("resources")
 
 
 class SignatureService:
+    """
+    Service class for managing operations related to signatures.
+
+    Attributes:
+        db (Session): The SQLAlchemy database session.
+        signature_repository (SignatureRepository): The repository for signature-related operations.
+    """
+
     def __init__(self, db: Session):
+        """
+        Initializes the SignatureService with a database session.
+
+        Args:
+            db (Session): The SQLAlchemy database session.
+        """
         self.db = db
         self.signature_repository = SignatureRepository(db)
 
     def collect_signatures(self, token_address: str):
-        """Collect signatures and store them in the database in batches."""
+        """
+        Collect signatures and store them in the database in batches.
+
+        Args:
+            token_address (str): The address of the token.
+
+        Raises:
+            HTTPException: If token is not found.
+        """
         token = self.db.query(Token).filter(Token.address == token_address).first()
         if not token:
             logger.error("Token not found")

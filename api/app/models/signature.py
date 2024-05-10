@@ -5,6 +5,16 @@ from app import Base
 
 
 class Signature(Base):
+    """
+    SQLAlchemy model representing a signature.
+
+    Attributes:
+        signature (str): The signature value.
+        slot (int): The slot number.
+        block_time (int): The time of the block.
+        token_id (int): The ID of the token associated with the signature.
+    """
+
     __tablename__ = "signature"
     signature = Column(String, primary_key=True)
     slot = Column(Integer, nullable=False)
@@ -14,6 +24,16 @@ class Signature(Base):
 
 
 class SignatureModel(BaseModel):
+    """
+    Pydantic model representing a signature.
+
+    Attributes:
+        signature (str): The signature value.
+        slot (int): The slot number.
+        block_time (int): The time of the block.
+        token_id (int): The ID of the token associated with the signature.
+    """
+
     signature: str
     slot: int
     block_time: int

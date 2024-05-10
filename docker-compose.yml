@@ -10,6 +10,7 @@ services:
       - "${API_PORT:-8000}:${API_PORT:-8000}"
     environment:
       - PORT=${API_PORT:-8000}
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
     restart: unless-stopped
     depends_on:
       - db

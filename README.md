@@ -12,6 +12,8 @@ POSTGRES_PASSWORD="admin"
 POSTGRES_DB="postgres"
 TELEGRAM_TOKEN=""
 SOLANA_RPC_URL=""
+PGADMIN_DEFAULT_EMAIL="admin@example.com"
+PGADMIN_DEFAULT_PASSWORD="admin"
 ```
 
 2. Запуск с помощью Docker Compose
@@ -43,3 +45,7 @@ http://localhost:8000/docs
 /add_token [адрес]: Добавить новый токен в базу данных.
 
 Пожалуйста, замените YOUR_TELEGRAM_BOT_TOKEN на реальный токен вашего бота.
+
+# PG_ADMIN
+
+Для доступа к бд используется PG_ADMIN на порту 5050

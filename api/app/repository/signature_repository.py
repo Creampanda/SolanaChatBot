@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models.signature import Signature, SignatureModel
+from app.models.signature import Signature
 from sqlalchemy.exc import IntegrityError
 
 

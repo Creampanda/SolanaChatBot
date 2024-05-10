@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
@@ -10,7 +10,6 @@ class Token(Base):
     __tablename__ = "token"
     id = Column(Integer, primary_key=True, autoincrement=True)
     address = Column(String, nullable=False, unique=True)
-    initial_sig = Column(String, nullable=True)
     update_authority = Column(String, nullable=True)
     signatures = relationship("Signature", back_populates="token")
     holders = relationship("Holder", back_populates="token")

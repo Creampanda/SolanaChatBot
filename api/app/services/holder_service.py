@@ -6,7 +6,7 @@ from fastapi import Depends, HTTPException
 from app.solana.solscan import TokenChainInfo
 from app.repository.holder_repository import HolderRepository
 from app import get_db
-from app.models.holder import Holder, HolderModel  # Ensure your Pydantic model import is correct
+from app.models.holder import Holder, HolderModel
 from app.models.token import Token
 from app.models.signature import Signature
 

@@ -3,8 +3,8 @@ import logging
 import emoji
 import requests
 from datetime import datetime
-from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, WebAppInfo
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
 
 # Set up logging
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -80,7 +80,7 @@ async def format_and_send_token_info(update: Update, token_data):
             f"\n<b>Объём за 6 часов:</b> {pair['volume']['h6']}"
             f"\n<b>Объём за 1 час:</b> {pair['volume']['h1']}"
             f"\n<b>Объём за 5 минут:</b> {pair['volume']['m5']}"
-            f"\n<b>Ликвидность:</b> {pair['liquidity']['usd']}"
+            f"\n<b>Ликвидность в USD:</b> {pair['liquidity']['usd']}"
             f"\n<b>FDV:</b> {pair['fdv']}"
             f"\n<b>Токен создан:</b> {formatted_date}\n"
         )

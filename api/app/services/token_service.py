@@ -1,5 +1,5 @@
 from functools import cached_property
-from fastapi import BackgroundTasks, Depends, HTTPException
+from fastapi import BackgroundTasks, HTTPException
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 import logging

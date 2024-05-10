@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from time import sleep
-from app.solana.config import INIT_MINT_COMMAND, SRC_URL, TOKEN, SPL_TOKEN_PROGRAM_ID
+from app.config import SOLANA_RPC_URL
 from solana.rpc.api import Client
 from solders.pubkey import Pubkey
 from solders.signature import Signature
@@ -13,7 +13,7 @@ logger = logging.getLogger("resources")
 
 
 class TokenChainInfo:
-    client = Client(SRC_URL)
+    client = Client(SOLANA_RPC_URL)
 
     def __init__(self, token_address: str) -> None:
         self.token_pb = Pubkey.from_string(token_address)
@@ -32,40 +32,6 @@ class TokenChainInfo:
         update_authority_bytes = account_info.value.data[4:36]
         self.token_update_authority = Pubkey(update_authority_bytes)
         return Pubkey(update_authority_bytes)
-
-    def find_deploy_transaction(self) -> Signature:
-
-        transaction_signatures = self.client.get_signatures_for_address(
-            self.token_update_authority, limit=1000
-        ).value
-        found_token_creation = None
-        start_ts = datetime.now()
-        for transaction_sig in transaction_signatures:
-            try:
-                transaction = self.client.get_transaction(
-                    transaction_sig.signature, max_supported_transaction_version=0
-                ).value.transaction
-            except SolanaRpcException as e:
-                sleep(5)
-                transaction = self.client.get_transaction(
-                    transaction_sig.signature, max_supported_transaction_version=0
-                ).value.transaction
-            accs = transaction.transaction.message.account_keys
-            if (
-                any(INIT_MINT_COMMAND in item for item in transaction.meta.log_messages)
-                and self.token_pb in accs
-                and SPL_TOKEN_PROGRAM_ID in accs
-            ):
-                print(transaction)
-                end_ts = datetime.now()
-
-                print(end_ts - start_ts)
-                if found_token_creation:
-                    print(f"Token was deployed in transaction: {transaction}")
-                else:
-                    print("Token deployment transaction not found.")
-                self.init_mint_sig = transaction_sig.signature
-                return self.init_mint_sig
 
     def collect_token_signatures(self):
         # Start fetching transaction signatures

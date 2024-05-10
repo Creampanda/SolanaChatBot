@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from app.models.holder import Holder
 from app import get_db
-from app.models.token import Token
 
 logger = logging.getLogger("resources")
 

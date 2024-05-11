@@ -160,8 +160,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if query.data == "get_token_info":
                 await handle_token_info(update, context, address)
-            # elif query.data == "get_holder_info":
-            #     await handle_holder_info(update, context, address)
+            elif query.data == "get_holder_info":
+                await handle_holder_info(update, context, address)
             elif query.data == "add_token":
                 await handle_add_token(update, context, address)
         except Exception as e:

@@ -119,7 +119,8 @@ async def get_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         category_summary = "\n".join(
             [f"{key} - {value} holders" for key, value in categories_count.items() if value > 0]
         )
-        await update.message.reply_text(f"Холдеры: \n{formatted_ans} \nКатегории:\n{category_summary}")
+        meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
+        await update.message.reply_text(f"Холдеры: \n{formatted_ans}\Обозначения: \n{meanings_text}\nКатегории:\n{category_summary}")
     else:
         await update.message.reply_text("Не удалось достать информацию по холдерам.")
 

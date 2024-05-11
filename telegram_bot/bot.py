@@ -75,6 +75,8 @@ def format_emojis_for_display(emojis):
 def format_token_info(token_data):
     message_text = "<b>Информация по токену:</b>\n"
     for pair in token_data["pairs"]:
+        if pair["quoteToken"]["address"] != "So11111111111111111111111111111111111111112":
+            continue
         ts = pair.get("pairCreatedAt", "N/A")
         if isinstance(ts, int):
             timestamp_s = ts / 1000
@@ -94,12 +96,12 @@ def format_token_info(token_data):
             f"\n<b>FDV:</b> {pair['fdv']}"
             f"\n<b>Токен создан:</b> {formatted_date}\n"
         )
+        break
     return message_text
 
 
 async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, address: str):
     token_response = requests.get(f"{API_BASE_URL}/get_token_info/{address}")
-    token_message = ""
     if token_response.status_code == 200:
         token_data = token_response.json()
         token_message = format_token_info(token_data)

@@ -105,6 +105,25 @@ async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             await update.callback_query.edit_message_text(error_text)
         else:
             await update.message.reply_text(error_text)
+    response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
+    if response.status_code == 200:
+        holders_data = response.json()
+        emojis, categories_count = categorize_balance(holders_data)
+        formatted_ans = format_emojis_for_display(emojis)
+        category_summary = "\n".join(
+            [f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0]
+        )
+        meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
+        if update.callback_query:
+            await update.callback_query.edit_message_text(f"Холдеры: \n{formatted_ans}\Обозначения: \n{meanings_text}\nКатегории:\n{category_summary}")
+        else:
+            await update.message.reply_html(f"Холдеры: \n{formatted_ans}\Обозначения: \n{meanings_text}\nКатегории:\n{category_summary}")
+    else:
+        error_text = "Не удалось получить информацию по холдерам."
+        if update.callback_query:
+            await update.callback_query.edit_message_text(error_text)
+        else:
+            await update.message.reply_text(error_text)
 
 
 # Handle token addition

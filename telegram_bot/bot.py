@@ -33,7 +33,14 @@ meanings = {
 
 
 def categorize_balance(holder_info):
-    categories_count = {k: 0 for k in meanings.values()}
+    categories_count = {
+        emoji.emojize(":blue_square:"): 0,
+        emoji.emojize(":green_square:"): 0,
+        emoji.emojize(":yellow_square:"): 0,
+        emoji.emojize(":orange_square:"): 0,
+        emoji.emojize(":red_square:"): 0,
+        emoji.emojize(":white_large_square:"): 0,
+    }
     emojis = []
     for holder in holder_info:
         init_bal = holder["initial_balance"]

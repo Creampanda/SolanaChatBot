@@ -23,12 +23,12 @@ API_BASE_URL = f"http://api_service:{os.getenv('API_PORT', 8000)}"
 user_data = {}
 
 meanings = {
-    emoji.emojize(":blue_square:"): "Текущий баланс > 100% начального баланса",
-    emoji.emojize(":green_square:"): "Текущий баланс > 90% начального баланса",
-    emoji.emojize(":yellow_square:"): "Текущий баланс > 50% начального баланса",
-    emoji.emojize(":orange_square:"): "Текущий баланс < 50% начального баланса",
-    emoji.emojize(":red_square:"): "Текущий баланс равен 0",
-    emoji.emojize(":white_large_square:"): "Не удалось получить баланс холдера",
+    ":blue_square:": "Текущий баланс > 100% начального баланса",
+    ":green_square:": "Текущий баланс > 90% начального баланса",
+    ":yellow_square:": "Текущий баланс > 50% начального баланса",
+    ":orange_square:": "Текущий баланс < 50% начального баланса",
+    ":red_square:": "Текущий баланс равен 0",
+    ":white_large_square:": "Не удалось получить баланс холдера",
 }
 
 
@@ -110,7 +110,7 @@ async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         category_summary = "\n".join(
             [f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0]
         )
-        meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
+        meanings_text = "\n".join([f"{emoji.emojize(key)} - {meaning}" for key, meaning in meanings.items()])
         holders_message = (
             f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
         )
@@ -189,7 +189,6 @@ async def receive_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     buttons = [
         InlineKeyboardButton("Получить информацию по токену", callback_data="get_token_info"),
-        InlineKeyboardButton("Получить информацию по холдерам", callback_data="get_holder_info"),
         InlineKeyboardButton("Добавить токен", callback_data="add_token"),
     ]
     reply_markup = InlineKeyboardMarkup([[button] for button in buttons])

@@ -157,7 +157,7 @@ def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # Setup start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Please enter the token address.")
+    await update.message.reply_text("Введите адрес токена.")
 
 
 # Receive address and provide actions

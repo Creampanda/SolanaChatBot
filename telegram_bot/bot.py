@@ -91,27 +91,6 @@ def format_token_info(token_data):
 
 
 async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, address: str):
-    # Запрос информации по холдерам
-    holders_response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
-    if holders_response.status_code == 200:
-        holders_data = holders_response.json()
-        # emojis, categories_count = categorize_balance(holders_data)
-        # formatted_ans = format_emojis_for_display(emojis)
-        # category_summary = "\n".join([f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0])
-        # meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
-        # holders_message = f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
-        # Отправка информации о холдерах
-        if update.callback_query:
-            await update.callback_query.edit_message_text("aaaaaaaaaaa")
-        else:
-            await update.message.reply_text("bbbbbbbbbbbb")
-    else:
-        error_text = "Не удалось получить информацию по холдерам."
-        if update.callback_query:
-            await update.callback_query.edit_message_text(error_text)
-        else:
-            await update.message.reply_text(error_text)
-    # Запрос информации по токену
     token_response = requests.get(f"{API_BASE_URL}/get_token_info/{address}")
     if token_response.status_code == 200:
         token_data = token_response.json()
@@ -129,6 +108,27 @@ async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             await update.message.reply_text(error_text)
 
 
+async def handle_holder_info(update: Update, context: ContextTypes.DEFAULT_TYPE, address: str):
+    # Запрос информации по холдерам
+    holders_response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
+    if holders_response.status_code == 200:
+        holders_data = holders_response.json()
+        emojis, categories_count = categorize_balance(holders_data)
+        # formatted_ans = format_emojis_for_display(emojis)
+        # category_summary = "\n".join([f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0])
+        # meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
+        # holders_message = f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
+        # Отправка информации о холдерах
+        if update.callback_query:
+            await update.callback_query.edit_message_text("aaaaaaaaaaa")
+        else:
+            await update.message.reply_text("bbbbbbbbbbbb")
+    else:
+        error_text = "Не удалось получить информацию по холдерам."
+        if update.callback_query:
+            await update.callback_query.edit_message_text(error_text)
+        else:
+            await update.message.reply_text(error_text)
 
 
 # Handle token addition
@@ -136,7 +136,7 @@ async def handle_add_token(update: Update, context: ContextTypes.DEFAULT_TYPE, a
     response = requests.post(f"{API_BASE_URL}/add_token/{address}")
     if response.status_code == 200:
         token_data = response.json()
-        message_text = f"Токен добавлен: {token_data.get("address")}"
+        message_text = f"Токен добавлен: {token_data.get('address')}"
         if update.callback_query:
             await update.callback_query.edit_message_text(message_text)
         else:
@@ -160,6 +160,8 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if query.data == "get_token_info":
                 await handle_token_info(update, context, address)
+            # elif query.data == "get_holder_info":
+            #     await handle_holder_info(update, context, address)
             elif query.data == "add_token":
                 await handle_add_token(update, context, address)
         except Exception as e:
@@ -192,6 +194,7 @@ async def receive_address(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     buttons = [
         InlineKeyboardButton("Получить информацию по токену", callback_data="get_token_info"),
+        InlineKeyboardButton("Получить информацию по холдерам", callback_data="get_holder_info"),
         InlineKeyboardButton("Добавить токен", callback_data="add_token"),
     ]
     reply_markup = InlineKeyboardMarkup([[button] for button in buttons])

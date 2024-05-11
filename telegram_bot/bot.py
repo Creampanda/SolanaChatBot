@@ -92,24 +92,16 @@ def format_token_info(token_data):
 
 async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, address: str):
     token_response = requests.get(f"{API_BASE_URL}/get_token_info/{address}")
+    token_message = ""
     if token_response.status_code == 200:
         token_data = token_response.json()
         token_message = format_token_info(token_data)
-        # Отправка информации о токене
-        if update.callback_query:
-            await update.callback_query.edit_message_text(token_message, parse_mode="HTML")
-        else:
-            await update.message.reply_html(token_message)
     else:
         error_text = "Не удалось получить информацию по токену."
         if update.callback_query:
             await update.callback_query.edit_message_text(error_text)
         else:
             await update.message.reply_text(error_text)
-
-
-async def handle_holder_info(update: Update, context: ContextTypes.DEFAULT_TYPE, address: str):
-    # Запрос информации по холдерам
     holders_response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
     if holders_response.status_code == 200:
         holders_data = holders_response.json()
@@ -122,13 +114,14 @@ async def handle_holder_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
         holders_message = (
             f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
         )
+        token_message += holders_message
         # Отправка информации о холдерах
         if update.callback_query:
-            await update.callback_query.edit_message_text(holders_message)
+            await update.callback_query.edit_message_text(token_message, parse_mode="HTML")
         else:
-            await update.message.reply_text(holders_message)
+            await update.message.reply_text(token_message)
     else:
-        error_text = "Не удалось получить информацию по холдерам."
+        error_text = "Не удалось получить информацию по токену."
         if update.callback_query:
             await update.callback_query.edit_message_text(error_text)
         else:
@@ -164,8 +157,6 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             if query.data == "get_token_info":
                 await handle_token_info(update, context, address)
-            elif query.data == "get_holder_info":
-                await handle_holder_info(update, context, address)
             elif query.data == "add_token":
                 await handle_add_token(update, context, address)
         except Exception as e:

@@ -91,39 +91,44 @@ def format_token_info(token_data):
 
 
 async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, address: str):
-    response = requests.get(f"{API_BASE_URL}/get_token_info/{address}")
-    if response.status_code == 200:
-        token_data = response.json()
-        message_text = format_token_info(token_data)
+    # Запрос информации по токену
+    token_response = requests.get(f"{API_BASE_URL}/get_token_info/{address}")
+    if token_response.status_code == 200:
+        token_data = token_response.json()
+        token_message = format_token_info(token_data)
+        # Отправка информации о токене
         if update.callback_query:
-            await update.callback_query.edit_message_text(message_text, parse_mode="HTML")
+            await update.callback_query.edit_message_text(token_message, parse_mode="HTML")
         else:
-            await update.message.reply_html(message_text)
+            await update.message.reply_html(token_message)
     else:
         error_text = "Не удалось получить информацию по токену."
         if update.callback_query:
             await update.callback_query.edit_message_text(error_text)
         else:
             await update.message.reply_text(error_text)
-    response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
-    if response.status_code == 200:
-        holders_data = response.json()
+
+    # Запрос информации по холдерам
+    holders_response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
+    if holders_response.status_code == 200:
+        holders_data = holders_response.json()
         emojis, categories_count = categorize_balance(holders_data)
         formatted_ans = format_emojis_for_display(emojis)
-        category_summary = "\n".join(
-            [f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0]
-        )
+        category_summary = "\n".join([f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0])
         meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
+        holders_message = f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
+        # Отправка информации о холдерах
         if update.callback_query:
-            await update.callback_query.edit_message_text(f"Холдеры: \n{formatted_ans}\Обозначения: \n{meanings_text}\nКатегории:\n{category_summary}")
+            await update.callback_query.edit_message_text(holders_message, parse_mode="HTML")
         else:
-            await update.message.reply_html(f"Холдеры: \n{formatted_ans}\Обозначения: \n{meanings_text}\nКатегории:\n{category_summary}")
+            await update.message.reply_html(holders_message)
     else:
         error_text = "Не удалось получить информацию по холдерам."
         if update.callback_query:
             await update.callback_query.edit_message_text(error_text)
         else:
             await update.message.reply_text(error_text)
+
 
 
 # Handle token addition

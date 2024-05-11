@@ -102,9 +102,9 @@ async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         holders_message = f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
         # Отправка информации о холдерах
         if update.callback_query:
-            await update.callback_query.edit_message_text(holders_message)
+            await update.callback_query.edit_message_text("aaaaaaaaaaa")
         else:
-            await update.message.reply_text(holders_message)
+            await update.message.reply_text("bbbbbbbbbbbb")
     else:
         error_text = "Не удалось получить информацию по холдерам."
         if update.callback_query:

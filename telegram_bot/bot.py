@@ -33,7 +33,7 @@ meanings = {
 
 
 def categorize_balance(holder_info):
-    categories_count = {emoji: 0 for emoji in meanings.values()}
+    categories_count = {k: 0 for k in meanings.values()}
     emojis = []
     for holder in holder_info:
         init_bal = holder["initial_balance"]
@@ -114,15 +114,19 @@ async def handle_holder_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
     if holders_response.status_code == 200:
         holders_data = holders_response.json()
         emojis, categories_count = categorize_balance(holders_data)
-        # formatted_ans = format_emojis_for_display(emojis)
-        # category_summary = "\n".join([f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0])
-        # meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
-        # holders_message = f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
+        formatted_ans = format_emojis_for_display(emojis)
+        category_summary = "\n".join(
+            [f"{key} - {value} холдеров" for key, value in categories_count.items() if value > 0]
+        )
+        meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
+        holders_message = (
+            f"Холдеры: \n{formatted_ans}\nОбозначения: \n{meanings_text}\nКатегории:\n{category_summary}"
+        )
         # Отправка информации о холдерах
         if update.callback_query:
-            await update.callback_query.edit_message_text("aaaaaaaaaaa")
+            await update.callback_query.edit_message_text(holders_message)
         else:
-            await update.message.reply_text("bbbbbbbbbbbb")
+            await update.message.reply_text(holders_message)
     else:
         error_text = "Не удалось получить информацию по холдерам."
         if update.callback_query:

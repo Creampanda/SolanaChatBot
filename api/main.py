@@ -17,7 +17,7 @@ def start():
     Notes:
         This function runs the FastAPI application using uvicorn with the specified host and port.
     """
-    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT)
 
 
 if __name__ == "__main__":

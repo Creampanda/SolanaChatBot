@@ -23,25 +23,34 @@ meanings = {
 
 
 def categorize_balance(holder_info):
+    categories_count = {
+        emoji.emojize(":blue_square:"): 0,
+        emoji.emojize(":green_square:"): 0,
+        emoji.emojize(":yellow_square:"): 0,
+        emoji.emojize(":orange_square:"): 0,
+        emoji.emojize(":red_square:"): 0,
+        emoji.emojize(":white_large_square:"): 0,
+    }
     emojis = []
     for holder in holder_info:
         init_bal = holder["initial_balance"]
         curr_bal = holder["current_balance"]
         if curr_bal > init_bal:
-            category_emoji = emoji.emojize(":blue_square:")  # Dark green square
+            category_emoji = emoji.emojize(":blue_square:")
         elif curr_bal > 0.9 * init_bal:
-            category_emoji = emoji.emojize(":green_square:")  # Dark green square
+            category_emoji = emoji.emojize(":green_square:")
         elif curr_bal > 0.5 * init_bal:
-            category_emoji = emoji.emojize(":yellow_square:")  # Yellow square
+            category_emoji = emoji.emojize(":yellow_square:")
         elif curr_bal > 0:
-            category_emoji = emoji.emojize(":orange_square:")  # Orange square
+            category_emoji = emoji.emojize(":orange_square:")
         elif curr_bal == 0:
-            category_emoji = emoji.emojize(":red_square:")  # Red square
+            category_emoji = emoji.emojize(":red_square:")
         else:
-            category_emoji = emoji.emojize(":white_large_square:")  # Default case
+            category_emoji = emoji.emojize(":white_large_square:")
 
         emojis.append(category_emoji)
-    return emojis
+        categories_count[category_emoji] += 1
+    return emojis, categories_count
 
 
 def format_emojis_for_display(emojis):
@@ -105,10 +114,12 @@ async def get_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     response = requests.post(f"{API_BASE_URL}/get_holders_info/{address}")
     if response.status_code == 200:
         holders_data = response.json()
-        answer = categorize_balance(holders_data)
-        formatted_ans = format_emojis_for_display(answer)
-        meanings_text = "\n".join([f"{emoji} - {meaning}" for emoji, meaning in meanings.items()])
-        await update.message.reply_text(f"Холдеры: \n{formatted_ans} \n{meanings_text}")
+        emojis, categories_count = categorize_balance(holders_data)
+        formatted_ans = format_emojis_for_display(emojis)
+        category_summary = "\n".join(
+            [f"{key} - {value} holders" for key, value in categories_count.items() if value > 0]
+        )
+        await update.message.reply_text(f"Холдеры: \n{formatted_ans} \nКатегории:\n{category_summary}")
     else:
         await update.message.reply_text("Не удалось достать информацию по холдерам.")
 

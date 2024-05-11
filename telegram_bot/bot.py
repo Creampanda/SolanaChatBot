@@ -103,6 +103,10 @@ async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     if token_response.status_code == 200:
         token_data = token_response.json()
         token_message = format_token_info(token_data)
+        if update.callback_query:
+            await update.callback_query.edit_message_text(token_message, parse_mode="HTML")
+        else:
+            await update.message.reply_html(token_message)
     else:
         error_text = "Не удалось получить информацию по токену."
         if update.callback_query:
@@ -124,13 +128,15 @@ async def handle_token_info(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         token_message += holders_message
         # Отправка информации о холдерах
         if update.callback_query:
-            await update.callback_query.edit_message_text(token_message, parse_mode="HTML")
+            # Ensure the context allows for a new message to be sent
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=holders_message)
         else:
-            await update.message.reply_text(token_message)
+            await update.message.reply_html(holders_message)
     else:
-        error_text = "Не удалось получить информацию по токену."
+        error_text = "Не удалось получить информацию по холдерам."
         if update.callback_query:
-            await update.callback_query.edit_message_text(error_text)
+            # Continue using the existing callback query to send the error message
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=error_text)
         else:
             await update.message.reply_text(error_text)
 

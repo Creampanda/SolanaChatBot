@@ -1,4 +1,5 @@
 import logging
+import traceback
 from typing import List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -62,7 +63,8 @@ async def add_token(
         token = token_service.add_new_token(address, background_tasks)
         return token
     except Exception as e:
-        logger.error(str(e))
+        error_log = traceback.format_exc()
+        logger.error(f"Failed to add new token {address}: {error_log}")
         raise HTTPException(status_code=400, detail=str(e))
 
 

@@ -1,0 +1,41 @@
+name: Test Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      docker:
+        image: docker:latest
+        options: --privileged
+        ports:
+          - 2375:2375
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        docker-compose --version
+
+    - name: Run containers with Docker Compose
+      run: |
+        export DOCKER_HOST=tcp://localhost:2375
+        docker-compose -f docker-compose-test.yml up -d
+
+    - name: Install PyTest
+      run: |
+        sudo apt-get update
+        sudo apt-get install python3-pip
+        pip3 install -r requirements.txt
+
+    - name: Execute tests with PyTest
+      run: |
+        pytest

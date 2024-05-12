@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+env:
+  DOCKER_HUB_TAG: ${{ github.ref == 'refs/heads/main' && 'stable' || 'latest' }}
+  PYTHON_VERSION: 3.12
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -15,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.12" # Adjust as needed for your project
+          python-version: $PYTHON_VERSION
 
       - name: Install flake8
         run: |
@@ -41,7 +45,8 @@ jobs:
         with:
           context: ./api
           file: ./api/Dockerfile
-          tags: "creampanda/solana_api_bot_training:${{ github.ref == 'refs/heads/main' ? 'stable' : 'latest' }}"
+          repository: creampanda/solana_api_bot_training
+          tags: $DOCKER_HUB_TAG
           push: true
 
       - name: Build Telegram Bot Docker image
@@ -49,5 +54,6 @@ jobs:
         with:
           context: ./telegram_bot
           file: ./telegram_bot/Dockerfile
-          tags: "creampanda/solana_tg_bot_training:${{ github.ref == 'refs/heads/main' ? 'stable' : 'latest' }}"
+          repository: creampanda/solana_tg_bot_training
+          tags: $DOCKER_HUB_TAG
           push: true

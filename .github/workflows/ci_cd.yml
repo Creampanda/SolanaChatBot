@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: $PYTHON_VERSION
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install flake8
         run: |
@@ -46,7 +46,7 @@ jobs:
           context: ./api
           file: ./api/Dockerfile
           repository: creampanda/solana_api_bot_training
-          tags: $DOCKER_HUB_TAG
+          tags: ${{ env.DOCKER_HUB_TAG }}
           push: true
 
       - name: Build Telegram Bot Docker image
@@ -55,5 +55,5 @@ jobs:
           context: ./telegram_bot
           file: ./telegram_bot/Dockerfile
           repository: creampanda/solana_tg_bot_training
-          tags: $DOCKER_HUB_TAG
+          tags: ${{ env.DOCKER_HUB_TAG }}
           push: true

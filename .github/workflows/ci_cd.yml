@@ -28,8 +28,8 @@ jobs:
 
       - name: Run flake8
         run: |
-          flake8 ./api --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero
-          flake8 ./telegram_bot --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero
+          flake8 ./api --count --show-source --statistics
+          flake8 ./telegram_bot --count --show-source --statistics
 
   push_to_registry:
     name: Push Docker image to Docker Hub

@@ -1,0 +1,13 @@
+[flake8]
+# General settings
+ignore = E226,E302,E41
+max-line-length = 120
+exclude = tests/*
+max-complexity = 15
+# Increase the maximum number of lines in a module before it's considered too complex
+# Count only errors
+count = True
+# Show source code for each error
+show-source = True
+# Show statistics at the end of the report
+statistics = True

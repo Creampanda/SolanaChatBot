@@ -14,7 +14,7 @@ jobs:
 
       - name: Run containers with Docker Compose
         run: |
-          docker-compose -f docker-compose-test.yml up --build
+          docker-compose -f docker-compose-test.yml up --build -d
 
       - name: Install PyTest
         run: |
@@ -25,6 +25,17 @@ jobs:
       - name: Execute tests with PyTest
         run: |
           pytest
+
+      - name: Collect Docker Compose logs
+        if: always()
+        run: |
+          docker-compose -f docker-compose-test.yml logs
+
+      - name: Upload Docker Compose logs as an artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-compose-logs
+          path: docker-compose-logs.txt
 
       - name: Stop containers
         if: always()

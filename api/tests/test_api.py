@@ -1,4 +1,3 @@
-import pytest
 import requests
 
 # Base URL for the API

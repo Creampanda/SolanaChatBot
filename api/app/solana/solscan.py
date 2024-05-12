@@ -78,7 +78,7 @@ class TokenChainInfo:
         """
         try:
             signatures = self.client.get_signatures_for_address(self.token_pb, limit=1000).value
-        except SolanaRpcException as e:
+        except SolanaRpcException:
             sleep(15)
             signatures = self.client.get_signatures_for_address(self.token_pb, limit=1000).value
 
@@ -94,7 +94,7 @@ class TokenChainInfo:
                 signatures = self.client.get_signatures_for_address(
                     self.token_pb, before=last_signature, limit=1000
                 ).value
-            except SolanaRpcException as e:
+            except SolanaRpcException:
                 sleep(15)
                 signatures = self.client.get_signatures_for_address(
                     self.token_pb, before=last_signature, limit=1000
@@ -125,7 +125,7 @@ class TokenChainInfo:
                 transaction = self.client.get_transaction(
                     signature, max_supported_transaction_version=0
                 ).value.transaction
-            except SolanaRpcException as e:
+            except SolanaRpcException:
                 sleep(15)
                 transaction = self.client.get_transaction(
                     signature, max_supported_transaction_version=0
@@ -181,7 +181,7 @@ class TokenChainInfo:
 
             try:
                 token_accounts = self.client.get_token_accounts_by_owner(pk, opts=opts)
-            except SolanaRpcException as e:
+            except SolanaRpcException:
                 sleep(15)
                 token_accounts = self.client.get_token_accounts_by_owner(pk, opts=opts)
 
@@ -190,7 +190,7 @@ class TokenChainInfo:
                     current_amount += int(
                         self.client.get_token_account_balance(token_acc.pubkey).value.amount
                     )
-                except SolanaRpcException as e:
+                except SolanaRpcException:
                     sleep(15)
                     current_amount += int(
                         self.client.get_token_account_balance(token_acc.pubkey).value.amount

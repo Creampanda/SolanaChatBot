@@ -1,0 +1,49 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+  pull_request:
+
+env:
+  DOCKER_HUB_TAG: ${{ github.ref == 'refs/heads/main' && 'stable' || 'latest' }}
+  PYTHON_VERSION: "3.12.0"
+
+jobs:
+  Build_and_push_to_repo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 ./api --count --show-source --statistics
+
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ secrets.YURI_DOCKER_USERNAME }}
+          password: ${{ secrets.YURI_DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          tags: zhuravleev/solana-chat-bot:${{ env.DOCKER_HUB_TAG }}
+          push: true

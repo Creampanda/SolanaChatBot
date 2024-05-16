@@ -1,0 +1,44 @@
+name: Test Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run containers with Docker Compose
+        env:
+          SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
+        run: |
+          docker-compose -f docker-compose-test.yml up --build -d
+
+      - name: Install PyTest
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3-pip
+          pip3 install -r requirements.txt
+
+      - name: Execute tests with PyTest
+        run: |
+          pytest
+
+      - name: Collect Docker Compose logs
+        if: always()
+        run: |
+          docker-compose -f docker-compose-test.yml logs
+
+      - name: Upload Docker Compose logs as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-compose-logs
+          path: docker-compose-logs.txt
+
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "docker-compose.yml" down ---remove-orphans

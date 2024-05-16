@@ -1,0 +1,29 @@
+services:
+  api_service_test:
+    build:
+      context: api/.
+      args:
+        PYTHON_VERSION: "3.12"
+        PORT: 5001
+    ports:
+      - 5001:5001
+    environment:
+      - PORT=5001
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL}
+      - POSTGRES_DB=test_db
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=test_db
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
